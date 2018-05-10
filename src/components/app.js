@@ -26,25 +26,49 @@ class App extends Component {
 		
 	}
 	handlekeyword(keyword) {
+		// if (	keyword.toUpperCase() !== keyword 
+		// 	|| 	keyword.length < 3 
+		// 	|| 	keyword.length > 8) {
+		// 	alert('Invalid Input: must be UPPERCASE between THREE to EIGHT long');
+		// 	return; 
+		// }
+		// if (!this.validKeyword(keyword)) {
+		// 	alert('Invalid Input: must be UPPERCASE between THREE to EIGHT long');
+		// }; 
+		if (!this.validKeyword(keyword)) {
+			alert('invalid input');
+			this.reset(this.state.keyword);
+			return 
+		}; 
+		this.reset(keyword); 
+	}
+
+	validKeyword (keyword){
+		for (var i = 0; i < keyword.length; i++){
+			var curr = keyword[i]; 
+			if (curr.toUpperCase() === curr && curr.toLowerCase() == curr) {
+				return false; 
+			}
+		}
 		if (	keyword.toUpperCase() !== keyword 
 			|| 	keyword.length < 3 
 			|| 	keyword.length > 8) {
-			alert('Invalid Input: must be UPPERCASE between THREE to EIGHT long');
-			return; 
+			return false ; 
 		}
-		this.reset(keyword); 
+		return true;
 	}
 	handleCipher(pressed) {
 		const pre = this.state.cipher;
 		const shift = this.state.keyword.charCodeAt(this.state.pos) - 'A'.charCodeAt(0); 
 		const cipher = `${pre + String.fromCharCode((pressed.charCodeAt(0) - 65 + shift)%26 + 65)}`;
+		
 		this.setState({cipher: cipher}); 
 	}
 	sourceTextClick(e) {
 		const pre = this.state.sourceWord; 
-		//console.log(pre);
 		const sourceWord = `${pre + e.target.value}`;
 		const newPos = (this.state.pos + 1) % this.state.keyword.length; 
+		
 		this.setState({sourceWord 	: sourceWord,
 					   pos 			: newPos});
 		this.setColor(String(newPos));
@@ -53,8 +77,8 @@ class App extends Component {
 
 	setColor(pos) {
 		this.clearTableBGColor();
+		
 		var elem = document.getElementsByClassName(pos);
-		console.log('setcolor: length: ' + elem.length);
 		if (elem.length === 0) {
 			return; 
 		}
@@ -73,35 +97,32 @@ class App extends Component {
 
 	sourceTextClear(e) {
 		this.reset(this.state.keyword); 
-		// this.setState(
-		// 	{	sourceWord: '', 
-		// 		cipher: '', 
-		// 		pos : 0
-		// 	}
-		// )
 	}
 	render() {
 		return (
 			<div>
 			  	<h1 id='config' >Configuration</h1>
-			  	<h2 id='keyword'>Keyword</h2>
-
-			  	<Keyword 			handlekeyword = {this.handlekeyword}/>
-			  	<KeywordTable 		keyword = {this.state.keyword}/>
-			  	
+			  	<h2 id='keyword'>Keyword </h2>
+			  	<h4>(Capital Letters with length between 3 to 8)</h4>
+			  	<div>
+			  		<Keyword handlekeyword = {this.handlekeyword}/>
+			  		<KeywordTable keyword = {this.state.keyword}/>
+			  	</div>
 			  	<h1>Encoding</h1>
 			  	<h2>Source Text</h2>
+			  	<div>
+			  		<SourceTextInput 	keyword = {this.state.keyword} 
+			  							sourceWord = {this.state.sourceWord} 
+			  							sourceTextClick = {this.sourceTextClick}
+			  							pos = {this.state.pos}/>
+			  		<SourceTextDisplay 	sourceWord = {this.state.sourceWord}
+			  							sourceTextClear = {this.sourceTextClear}/>
+			  	</div>
 			  	
-			  	<SourceTextInput 	keyword = {this.state.keyword} 
-			  						sourceWord = {this.state.sourceWord} 
-			  						sourceTextClick = {this.sourceTextClick}
-			  						pos = {this.state.pos}
-			  	/>
-			  	
-			  	<SourceTextDisplay 	sourceWord = {this.state.sourceWord}
-			  						sourceTextClear = {this.sourceTextClear}/>
 			  	<h2>Cipher Text</h2>
-			  	<CipherTextDisplay 	cipher = {this.state.cipher}/>
+			  	<div>
+			  		<CipherTextDisplay 	cipher = {this.state.cipher}/>		
+			  	</div>
 
 			</div>
 		);
@@ -121,14 +142,12 @@ class Keyword extends Component {
 		this.onFormEvent = this.onFormEvent.bind(this); 
 	}
 	onInputChange(e) {
-		this.setState({keyword: e.target.value});
-		   
+		this.setState({keyword: e.target.value});  
 	};
 
 	onFormEvent(e) {
 		e.preventDefault(); 
 		this.props.handlekeyword(this.state.keyword);
-		//this.setState({ keyword: '' }); 
 	};
 
 	render() {
@@ -155,14 +174,14 @@ class KeywordTable extends Component {
 		const rowFirst = [];  
 		const rowSecond = [];
 		const aCode = "A".charCodeAt(0); 
+		
 		for (var i = 0; i < keyword.length; i++) {
 			rowFirst.push(<TableElement key = {i} value = {keyword.charAt(i)} classN = {i}/> ); 
 			rowSecond.push(<TableElement key = {i} value = {keyword.charCodeAt(i) - aCode} classN = {i}/>)
 		}
-		//console.log(keyword.charAt(0) - 'a');
 		return(
 			<div>
-				<table className = 'table'> 
+				<table className = 'table table-bordered'> 
 					<tbody>
 						<tr>{rowFirst}</tr>
 						<tr>{rowSecond}</tr>
@@ -189,8 +208,6 @@ const TableElement = ({value, classN}) => {
 class SourceTextInput extends Component {
 	constructor (props) {
 		super(props); 
-		//const letters = 
-		//console.log(letters.length); 
 		this.state = {
 			rowFirst : ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 						 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
@@ -231,7 +248,6 @@ class SourceTextInput extends Component {
 		);
 	}
 	render() {
- 
 		return (
 			<div>
 				<table > 
@@ -239,8 +255,7 @@ class SourceTextInput extends Component {
 						{this.renderSourceTextFirstLine(this.state.rowFirst)}
 						{this.renderSourceTextSecondLine(this.state.pos)}
 					</tbody>
-				</table>
-					
+				</table>	
 			</div>
 		); 
 	};	
