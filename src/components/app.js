@@ -14,8 +14,17 @@ class App extends Component {
 		this.handlekeyword = this.handlekeyword.bind(this); 
 		this.sourceTextClick = this.sourceTextClick.bind(this); 
 		this.sourceTextClear = this.sourceTextClear.bind(this); 
+		this.setColor = this.setColor.bind(this); 
+		this.clearTableBGColor = this.clearTableBGColor.bind(this); 
 	}
-
+	reset(keyword) {
+		this.setState({keyword: keyword, 
+					   sourceWord: '', 
+					   cipher: '', 
+					   pos : 0}, 
+					   ()=> {this.setColor('0')});
+		
+	}
 	handlekeyword(keyword) {
 		if (	keyword.toUpperCase() !== keyword 
 			|| 	keyword.length < 3 
@@ -23,10 +32,7 @@ class App extends Component {
 			alert('Invalid Input: must be UPPERCASE between THREE to EIGHT long');
 			return; 
 		}
-		this.setState({keyword: keyword, 
-					   sourceWord: '', 
-					   cipher: '', 
-					   pos : 0})
+		this.reset(keyword); 
 	}
 	handleCipher(pressed) {
 		const pre = this.state.cipher;
@@ -38,25 +44,47 @@ class App extends Component {
 		const pre = this.state.sourceWord; 
 		//console.log(pre);
 		const sourceWord = `${pre + e.target.value}`;
-		this.setState({sourceWord : sourceWord,
-					   pos : (this.state.pos + 1) % this.state.keyword.length
-					}); 
-		this.handleCipher(e.target.value); 
+		const newPos = (this.state.pos + 1) % this.state.keyword.length; 
+		this.setState({sourceWord 	: sourceWord,
+					   pos 			: newPos});
+		this.setColor(String(newPos));
+		this.handleCipher(e.target.value);		
+	}
+
+	setColor(pos) {
+		this.clearTableBGColor();
+		var elem = document.getElementsByClassName(pos);
+		console.log('setcolor: length: ' + elem.length);
+		if (elem.length === 0) {
+			return; 
+		}
+		elem[0].style.backgroundColor = "lightblue";
+		elem[1].style.backgroundColor = "lightblue";
+	}
+
+	clearTableBGColor (){
+		var elem = document.getElementsByTagName('td'); 
+		// for (var i = 0; i < elem.length; i++) {
+		// 	elem[i].style.backgroundColor = 'transparent';
+		// }
+		var elemArray = [...elem]; 
+		elemArray.forEach(function(e){e.style.backgroundColor = 'transparent';});
 	}
 
 	sourceTextClear(e) {
-		this.setState(
-			{	sourceWord: '', 
-				cipher: '', 
-				pos : 0
-			}
-		)
+		this.reset(this.state.keyword); 
+		// this.setState(
+		// 	{	sourceWord: '', 
+		// 		cipher: '', 
+		// 		pos : 0
+		// 	}
+		// )
 	}
 	render() {
 		return (
 			<div>
-			  	<h1>Configuration</h1>
-			  	<h2>Keyword</h2>
+			  	<h1 id='config' >Configuration</h1>
+			  	<h2 id='keyword'>Keyword</h2>
 
 			  	<Keyword 			handlekeyword = {this.handlekeyword}/>
 			  	<KeywordTable 		keyword = {this.state.keyword}/>
@@ -128,13 +156,13 @@ class KeywordTable extends Component {
 		const rowSecond = [];
 		const aCode = "A".charCodeAt(0); 
 		for (var i = 0; i < keyword.length; i++) {
-			rowFirst.push(<TableElement key = {i} value = {keyword.charAt(i)}/>); 
-			rowSecond.push(<TableElement key = {i} value = {keyword.charCodeAt(i) - aCode}/>)
+			rowFirst.push(<TableElement key = {i} value = {keyword.charAt(i)} classN = {i}/> ); 
+			rowSecond.push(<TableElement key = {i} value = {keyword.charCodeAt(i) - aCode} classN = {i}/>)
 		}
 		//console.log(keyword.charAt(0) - 'a');
 		return(
 			<div>
-				<table> 
+				<table className = 'table'> 
 					<tbody>
 						<tr>{rowFirst}</tr>
 						<tr>{rowSecond}</tr>
@@ -153,9 +181,9 @@ class KeywordTable extends Component {
 	};	
 }
 
-const TableElement = ({value}) => {
+const TableElement = ({value, classN}) => {
 	return (
-		<td>{value}</td>
+		<td className={classN}>{value}</td>
 	); 
 }
 class SourceTextInput extends Component {
@@ -179,7 +207,9 @@ class SourceTextInput extends Component {
 			row.push(<td key = {i}>
 							<button onClick = {this.props.sourceTextClick} 
 									value = {letters[i]} 
-									type="button">{letters[i]}
+									type="button"
+									className="btn btn-outline-success btn-sm">
+									{letters[i]}
 							</button>
 					</td>); 
 		}
@@ -190,9 +220,11 @@ class SourceTextInput extends Component {
 	renderSourceTextSecondLine(pos) {
 		const shift = this.props.keyword.charCodeAt(this.props.pos) - 'A'.charCodeAt(0); 
 		const row = []; 
-		console.log('aaaaaaaaa');
 		for (var i = 0; i < this.state.rowFirst.length; i++) {
-			row.push(<td key = {i}>{String.fromCharCode((this.state.rowFirst[i].charCodeAt(0) - 65 + shift)%26 + 65)}</td>)
+			const value = String.fromCharCode((this.state.rowFirst[i].charCodeAt(0) - 65 + shift)%26 + 65); 
+			row.push(<td className ="font-weight-bold" key = {i}>
+						{value}
+					</td>)
 		};
 		return (
 			<tr>{row}</tr>
@@ -202,7 +234,7 @@ class SourceTextInput extends Component {
  
 		return (
 			<div>
-				<table> 
+				<table > 
 					<tbody>
 						{this.renderSourceTextFirstLine(this.state.rowFirst)}
 						{this.renderSourceTextSecondLine(this.state.pos)}
